@@ -6,17 +6,11 @@ class SpecificationRepository implements ISpecificationRepository {
 
     private specification: Specification[]
 
-    private static INSTANCE: SpecificationRepository
 
-    private constructor() {
+    constructor() {
         this.specification = []
     }
-    public static getInstance(): SpecificationRepository {
-        if (!SpecificationRepository.INSTANCE) {
-            SpecificationRepository.INSTANCE = new SpecificationRepository()
-        }
-        return SpecificationRepository.INSTANCE
-    }
+
 
     create({ name, description }: ICreateSpecificationDTO): void {
         const specification = new Specification()

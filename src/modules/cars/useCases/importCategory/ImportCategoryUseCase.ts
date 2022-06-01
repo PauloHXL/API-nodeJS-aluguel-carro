@@ -10,23 +10,41 @@ interface IImportCategory {
 class ImportCategoryUseCase {
     constructor(private categoriesRepository: ICategoriesRepository) { }
 
-    loadCategories(file: Express.Multer.File): IImportCategory[] {
-        const categories: IImportCategory[] = []
-        const stream = fs.createReadStream(file.path)
-        const parseFile = parse()
-        stream.pipe(parseFile)
-        parseFile.on("data", async (line) => {
-            const [name, description] = line
-            categories.push({
-                name,
-                description
+    loadCategories(file: Express.Multer.File): Promise<IImportCategory[]> {
+        return new Promise((resolve, reject) => {
+            const categories: IImportCategory[] = []
+            const stream = fs.createReadStream(file.path)
+            const parseFile = parse()
+            stream.pipe(parseFile)
+            parseFile.on("data", async (line) => {
+                const [name, description] = line
+                categories.push({
+                    name,
+                    description
+                })
             })
+                .on("end", () => {
+                    fs.promises.unlink(file.path)
+                    resolve(categories)
+                })
+                .on("error", (err) => {
+                    reject(err)
+                })
         })
-        return categories
     }
-    execute(file: Express.Multer.File): void {
-        const categories = this.loadCategories(file)
-        console.log(categories)
+    async execute(file: Express.Multer.File): Promise<void> {
+        const categories = await this.loadCategories(file)
+        categories.map(async (category) => {
+            const { name, description } = category
+
+            const existCategory = this.categoriesRepository.findByName(name)
+            if (!existCategory) {
+                this.categoriesRepository.create({
+                    name,
+                    description
+                })
+            }
+        })
     }
 }
 

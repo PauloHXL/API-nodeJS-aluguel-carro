@@ -4,7 +4,7 @@ import { ListCategoriesUseCase } from "./ListCategoriesUseCase";
 
 
 
-const categoriesRepository = CategoriesRepository.getInstance()
+const categoriesRepository = null
 const listCategoriesUseCase = new ListCategoriesUseCase(categoriesRepository)
 
 
